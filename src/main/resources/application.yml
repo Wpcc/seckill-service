@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: seckill-service
+  profiles:
+    default: local
