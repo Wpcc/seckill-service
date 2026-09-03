@@ -4,3 +4,8 @@ spring:
     username: root
     password: 请填写本机密码
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    expire-minutes: 120
