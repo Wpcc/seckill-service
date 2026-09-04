@@ -37,11 +37,21 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
     }
 
     try {
-      jwtService.parseUserId(token);
+      Long userId = jwtService.parseUserId(token);
+      CurrentUserContext.setUserId(userId);
       return true;
     } catch (IllegalArgumentException exception) {
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "无效或已过期的登录令牌");
       return false;
     }
+  }
+
+  @Override
+  public void afterCompletion(
+      HttpServletRequest request,
+      HttpServletResponse response,
+      Object handler,
+      Exception exception) {
+    CurrentUserContext.clear();
   }
 }

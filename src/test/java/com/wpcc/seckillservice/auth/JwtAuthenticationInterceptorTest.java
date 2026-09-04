@@ -1,6 +1,7 @@
 package com.wpcc.seckillservice.auth;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -72,6 +73,11 @@ class JwtAuthenticationInterceptorTest {
     boolean allowed = interceptor.preHandle(request, response, new Object());
 
     assertTrue(allowed);
+    org.junit.jupiter.api.Assertions.assertEquals(1001L, CurrentUserContext.requireUserId());
     verify(jwtService).parseUserId("valid-token");
+
+    interceptor.afterCompletion(request, response, new Object(), null);
+
+    assertThrows(IllegalStateException.class, CurrentUserContext::requireUserId);
   }
 }
