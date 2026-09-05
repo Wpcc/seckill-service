@@ -34,4 +34,6 @@ build/
 
 ### Other ###
 .env
+.env.local
+.env.*.local
 src/main/resources/application-local.yml

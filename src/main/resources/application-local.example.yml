@@ -5,6 +5,14 @@ spring:
     password: 请填写本机密码
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 16379
+      password:
+      database: 0
+      timeout: 3000ms
+
 app:
   jwt:
     secret: ${JWT_SECRET}
