@@ -17,21 +17,26 @@ public class SeckillEligibilityService {
   private final SeckillActivityMapper seckillActivityMapper;
   private final ProductMapper productMapper;
   private final StringRedisTemplate stringRedisTemplate;
+  private final SeckillRateLimitService seckillRateLimitService;
 
   private static final String REQUEST_KEY_PREFIX = "seckill:request:";
 
   public SeckillEligibilityService(
       SeckillActivityMapper seckillActivityMapper,
       ProductMapper productMapper,
-      StringRedisTemplate stringRedisTemplate) {
+      StringRedisTemplate stringRedisTemplate,
+      SeckillRateLimitService seckillRateLimitService) {
     this.seckillActivityMapper = seckillActivityMapper;
     this.productMapper = productMapper;
     this.stringRedisTemplate = stringRedisTemplate;
+    this.seckillRateLimitService = seckillRateLimitService;
   }
 
   public SeckillCheckResponse check(
       Long activityId) {
     Long userId = CurrentUserContext.requireUserId();
+
+    seckillRateLimitService.checkAllowed(activityId, userId);
 
     SeckillActivity activity = seckillActivityMapper.findById((activityId))
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "秒杀活动不存在"));

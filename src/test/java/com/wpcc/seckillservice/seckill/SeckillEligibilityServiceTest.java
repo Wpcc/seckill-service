@@ -112,6 +112,7 @@ class SeckillEligibilityServiceTest {
     SeckillActivityMapper activityMapper = mock(SeckillActivityMapper.class);
     ProductMapper productMapper = mock(ProductMapper.class);
     StringRedisTemplate stringRedisTemplate = mock(StringRedisTemplate.class);
+    SeckillRateLimitService seckillRateLimitService = mock(SeckillRateLimitService.class);
     @SuppressWarnings("unchecked")
     ValueOperations<String, String> valueOperations = mock(ValueOperations.class);
     when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
@@ -119,7 +120,8 @@ class SeckillEligibilityServiceTest {
     SeckillEligibilityService service = new SeckillEligibilityService(
         activityMapper,
         productMapper,
-        stringRedisTemplate);
+        stringRedisTemplate,
+        seckillRateLimitService);
     return new TestContext(service, activityMapper, productMapper, valueOperations);
   }
 
