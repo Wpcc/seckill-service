@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.wpcc.seckillservice.product.cache.ProductCacheResult;
 import com.wpcc.seckillservice.product.cache.ProductCacheService;
 import com.wpcc.seckillservice.product.dto.ProductResponse;
 
@@ -27,15 +28,19 @@ public class ProductService {
 
   public Optional<ProductResponse> findProductById(
       Long id) {
-    Optional<ProductResponse> cachedProduct = productCacheService.getById(id);
+    ProductCacheResult cachedProduct = productCacheService.getById(id);
 
-    if (cachedProduct.isPresent()) {
-      return cachedProduct;
+    if (cachedProduct.fromCache()) {
+      return cachedProduct.product();
     }
 
     Optional<ProductResponse> databaseProduct = productMapper.findById(id).map(this::toResponse);
 
-    databaseProduct.ifPresent(productCacheService::put);
+    if (databaseProduct.isPresent()) {
+      productCacheService.put(databaseProduct.get());
+    } else {
+      productCacheService.putNotFound(id);
+    }
 
     return databaseProduct;
   }

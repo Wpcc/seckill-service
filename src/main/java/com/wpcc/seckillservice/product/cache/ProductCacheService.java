@@ -20,6 +20,9 @@ public class ProductCacheService {
   private final StringRedisTemplate stringRedisTemplate;
   private final JsonMapper jsonMapper;
 
+  private static final String NULL_VALUE = "__NULL__";
+  private static final Duration NULL_EXPIRE_DURATION = Duration.ofMinutes(1);
+
   public ProductCacheService(
       StringRedisTemplate stringRedisTemplate,
       JsonMapper jsonMapper) {
@@ -27,21 +30,25 @@ public class ProductCacheService {
     this.jsonMapper = jsonMapper;
   }
 
-  public Optional<ProductResponse> getById(
+  public ProductCacheResult getById(
       Long productId) {
     String key = buildKey(productId);
     String json = stringRedisTemplate.opsForValue().get(key);
 
     if (json == null) {
-      return Optional.empty();
+      return new ProductCacheResult(Optional.empty(), false);
+    }
+
+    if (NULL_VALUE.equals(json)) {
+      return new ProductCacheResult(Optional.empty(), true);
     }
 
     try {
       ProductResponse product = jsonMapper.readValue(json, ProductResponse.class);
-      return Optional.of(product);
+      return new ProductCacheResult(Optional.of(product), true);
     } catch (JacksonException exception) {
       stringRedisTemplate.delete(key);
-      return Optional.empty();
+      return new ProductCacheResult(Optional.empty(), false);
     }
   }
 
@@ -51,6 +58,15 @@ public class ProductCacheService {
       String json = jsonMapper.writeValueAsString(product);
 
       stringRedisTemplate.opsForValue().set(buildKey(product.id()), json, EXPIRE_DURATION);
+    } catch (JacksonException exception) {
+      throw new IllegalStateException("商品缓存序列化失败", exception);
+    }
+  }
+
+  public void putNotFound(
+      Long productId) {
+    try {
+      stringRedisTemplate.opsForValue().set(buildKey(productId), NULL_VALUE, NULL_EXPIRE_DURATION);
     } catch (JacksonException exception) {
       throw new IllegalStateException("商品缓存序列化失败", exception);
     }

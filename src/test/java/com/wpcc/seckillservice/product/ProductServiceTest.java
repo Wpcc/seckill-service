@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import com.wpcc.seckillservice.product.cache.ProductCacheResult;
 import com.wpcc.seckillservice.product.cache.ProductCacheService;
 import com.wpcc.seckillservice.product.dto.ProductResponse;
 
@@ -43,7 +44,8 @@ class ProductServiceTest {
     ProductService productService = new ProductService(productMapper, productCacheService);
     ProductResponse cachedProduct = new ProductResponse(1L, "机械键盘", "热插拔键盘", new BigDecimal("299.00"), 20);
 
-    when(productCacheService.getById(1L)).thenReturn(Optional.of(cachedProduct));
+    when(productCacheService.getById(1L))
+        .thenReturn(new ProductCacheResult(Optional.of(cachedProduct), true));
 
     Optional<ProductResponse> response = productService.findProductById(1L);
 
@@ -60,7 +62,8 @@ class ProductServiceTest {
     ProductService productService = new ProductService(productMapper, productCacheService);
     Product product = product(1L, "机械键盘", "热插拔键盘", "299.00", 20);
 
-    when(productCacheService.getById(1L)).thenReturn(Optional.empty());
+    when(productCacheService.getById(1L))
+        .thenReturn(new ProductCacheResult(Optional.empty(), false));
     when(productMapper.findById(1L)).thenReturn(Optional.of(product));
 
     Optional<ProductResponse> response = productService.findProductById(1L);
@@ -75,11 +78,26 @@ class ProductServiceTest {
     ProductCacheService productCacheService = mock(ProductCacheService.class);
     ProductService productService = new ProductService(productMapper, productCacheService);
 
-    when(productCacheService.getById(999L)).thenReturn(Optional.empty());
+    when(productCacheService.getById(999L))
+        .thenReturn(new ProductCacheResult(Optional.empty(), false));
     when(productMapper.findById(999L)).thenReturn(Optional.empty());
 
     assertTrue(productService.findProductById(999L).isEmpty());
     verify(productCacheService, never()).put(org.mockito.ArgumentMatchers.any());
+    verify(productCacheService).putNotFound(999L);
+  }
+
+  @Test
+  void findProductById_shouldReturnEmptyWithoutQueryingDatabaseWhenNullValueIsCached() {
+    ProductMapper productMapper = mock(ProductMapper.class);
+    ProductCacheService productCacheService = mock(ProductCacheService.class);
+    ProductService productService = new ProductService(productMapper, productCacheService);
+
+    when(productCacheService.getById(999L))
+        .thenReturn(new ProductCacheResult(Optional.empty(), true));
+
+    assertTrue(productService.findProductById(999L).isEmpty());
+    verify(productMapper, never()).findById(999L);
   }
 
   private Product product(Long id, String name, String description, String price, Integer stock) {
