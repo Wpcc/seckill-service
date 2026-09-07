@@ -20,6 +20,17 @@ public class SeckillOrder {
       Long activityId,
       Long userId,
       Long productId,
+      BigDecimal seckillPrice) {
+    this.activityId = activityId;
+    this.userId = userId;
+    this.productId = productId;
+    this.seckillPrice = seckillPrice;
+  }
+
+  public SeckillOrder(
+      Long activityId,
+      Long userId,
+      Long productId,
       BigDecimal seckillPrice,
       Integer status,
       LocalDateTime createdAt) {
