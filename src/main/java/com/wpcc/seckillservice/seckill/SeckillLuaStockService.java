@@ -3,6 +3,7 @@ package com.wpcc.seckillservice.seckill;
 import java.time.Duration;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -13,10 +14,12 @@ public class SeckillLuaStockService {
   private static final String PURCHASED_USERS_KEY_PREFIX = "seckill:purchased-users:";
 
   private final StringRedisTemplate stringRedisTemplate;
+
   private final DefaultRedisScript<Long> seckillLuaScript;
 
   public SeckillLuaStockService(
       StringRedisTemplate stringRedisTemplate,
+      @Qualifier("seckillLuaScript")
       DefaultRedisScript<Long> seckillLuaScript) {
     this.stringRedisTemplate = stringRedisTemplate;
     this.seckillLuaScript = seckillLuaScript;
